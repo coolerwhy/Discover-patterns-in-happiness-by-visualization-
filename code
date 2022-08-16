@@ -1,0 +1,167 @@
+library(tidyverse)
+library(readxl)
+library(GGally)
+centertitle <- theme(plot.title = element_text(hjust = 0.5))
+```
+
+#1) Produce an appropriate graphical display for the Year variable.
+
+worldhappiness <- read_excel("World Happiness Data 2018.xlsx")
+#worldhappiness
+ggplot(worldhappiness)+
+  geom_bar(aes(as.numeric(as.character(year))),color="blue")+
+  labs(title="bar plot of year",x="year")+
+  scale_x_continuous(breaks=round(seq(min(worldhappiness$year),max(worldhappiness$year),by=1),1))+
+  centertitle
+  
+#2) Create a data frame that includes only the 2017 data, and do the following:
+#a) For each variable (by itself), create an appropriate graphical display.
+
+worldhappiness2017 <- filter(worldhappiness,worldhappiness$year==2017)
+#worldhappiness2017
+#Happiness
+ggplot(worldhappiness2017)+
+  geom_histogram(aes(Happiness),fill="blue",color="red")+
+  labs(title="Plot of Happiness",x="Happiness")+
+  scale_x_continuous(breaks=round(seq(min(worldhappiness2017$Happiness),max(worldhappiness2017$Happiness),by=1),2))+
+  centertitle
+#LogGDPPerCapita
+ggplot(worldhappiness2017)+
+  geom_histogram(aes(LogGDPPerCapita),fill="blue",color="red")+
+  labs(title="Plot of LogGDP Per Capita",x="LogGDP Per Capita")+
+  scale_x_continuous(breaks=round(seq(min(worldhappiness2017$LogGDPPerCapita,na.rm=TRUE),max(worldhappiness2017$LogGDPPerCapita,na.rm=TRUE),by=1),2))+
+  centertitle
+#SocialSupport
+ggplot(worldhappiness2017)+
+  geom_histogram(aes(SocialSupport),fill="blue",color="red")+
+  labs(title="Plot of Social Support",x="Social Support")+
+  scale_x_continuous(breaks=round(seq(min(worldhappiness2017$SocialSupport,na.rm=TRUE),max(worldhappiness2017$SocialSupport,na.rm=TRUE),by=0.1),1))+
+  centertitle
+#FreedomToMakeLifeChoices
+ggplot(worldhappiness2017)+
+  geom_histogram(aes(FreedomToMakeLifeChoices),fill="blue",color="red")+
+  labs(title="Plot of Freedom To Make Life Choices",x="Freedom To Make Life Choices")+
+  scale_x_continuous(breaks=round(seq(min(worldhappiness2017$FreedomToMakeLifeChoices,na.rm=TRUE),max(worldhappiness2017$FreedomToMakeLifeChoices,na.rm=TRUE),by=0.1),1))+
+  centertitle
+#PerceptionsOfCorruption
+ggplot(worldhappiness2017)+
+  geom_histogram(aes(PerceptionsOfCorruption),fill="blue",color="red")+
+  labs(title="Plot of Perceptions Of Corruption",x="Perceptions Of Corruption")+
+  scale_x_continuous(breaks=round(seq(min(worldhappiness2017$PerceptionsOfCorruption,na.rm=TRUE),max(worldhappiness2017$PerceptionsOfCorruption,na.rm=TRUE),by=0.1),1))+
+  centertitle
+#b) Produce graphs of Happiness as the dependent (y) variable and each of the other variables as the
+independent (x) variables. For scatterplots, include a smoothed curve (geom_smooth) for each
+one as well. Which variable appears to be the most correlated with happiness?
+```{r}
+worldhappiness2017gally <- select(worldhappiness2017,Happiness,LogGDPPerCapita,SocialSupport,FreedomToMakeLifeChoices,PerceptionsOfCorruption)
+
+ggplot(worldhappiness2017,aes(x=LogGDPPerCapita,y=Happiness))+
+  geom_point()+
+  geom_smooth(se=F)+
+  geom_smooth(method=lm,se=F)+
+  labs(title = "Happiness VS LogGDPPerCapita")+
+  centertitle
+
+ggplot(worldhappiness2017,aes(x=SocialSupport,y=Happiness))+
+  geom_point()+
+  geom_smooth(se=F)+
+  geom_smooth(method=lm,se=F)+
+  labs(title = "Happiness VS SocialSupport")+
+  centertitle
+
+ggplot(worldhappiness2017,aes(x=FreedomToMakeLifeChoices,y=Happiness))+
+  geom_point()+
+  geom_smooth(se=F)+
+  geom_smooth(method=lm,se=F)+
+  labs(title = "Happiness VS FreedomToMakeLifeChoices")+
+  centertitle
+
+ggplot(worldhappiness2017,aes(x=PerceptionsOfCorruption,y=Happiness))+
+  geom_point()+
+  geom_smooth(se=F)+
+  geom_smooth(method=lm,se=F)+
+  labs(title = "Happiness VS PerceptionsOfCorruption")+
+  centertitle
+
+GGally::ggpairs(worldhappiness2017gally)+
+  labs(title="correlations plot")+
+  centertitle
+  
+ #c) Create a new variable called SocialSupportCategory, which equals 1 if the value of that country’s
+SocialSupport is above the median and 0 if it is not. Check that it was created properly. Use the factor function to assign labels of “low” and “high”, respectively, to SocialSupportCategory. Create an appropriate graphical display of the SocialSupportCategory variable.
+
+worldhappiness2017$SocialSupportCategory <-ifelse(worldhappiness2017$SocialSupport >= median(worldhappiness2017$SocialSupport,na.rm=TRUE),1,0)
+worldhappiness2017$SocialSupportCategory
+worldhappiness2017$SocialSupportCategory<-factor(worldhappiness2017$SocialSupportCategory,
+    levels = c("1","0"),
+    labels = c("high","low"))
+#worldhappiness2017
+#worldhappiness2017[worldhappiness2017=='NA'] <- NA
+#new_worldhappiness2017 <- worldhappiness2017[is.na(worldhappiness2017$SocialSupportCategory),]
+
+  ggplot(worldhappiness2017)+
+    geom_bar(aes(SocialSupportCategory),fill=c("blue","red","yellow"))+
+    labs(title = "plot of SocialSupportCategory")+
+    centertitle
+    
+  #d) Produce a scatterplot of Happiness as the dependent (y) variable and LogGDPPerCapita as the independent (x) variables, 
+  with SocialSupportCategory as the color aesthetic. Then, redo the graph with the FreedomToMakeLifeChoiceCat as the color aesthetic instead.
+  
+  ggplot(worldhappiness2017,aes(x=LogGDPPerCapita, y=Happiness,color=SocialSupportCategory,na.rm=T))+
+  geom_point()+
+  geom_smooth(se=F)+
+  labs(title="Happiness And LogGDPPerCapita")+
+  centertitle+
+  scale_color_discrete(name="SocialSupportCategory")
+
+ggplot(worldhappiness2017,aes(x=LogGDPPerCapita, y=Happiness,color=FreedomToMakeLifeChoicesCat))+
+  geom_point()+
+  geom_smooth(se=F)+
+  labs(title="Happiness And LogGDPPerCapita")+
+  centertitle+
+  scale_color_discrete(name="FreedomToMakeLifeChoicesCat")
+  
+ #e) Create one graph that includes Happiness, LogGDPPerCapita, SocialSupportCategory, and FreedomToMakeLifeChoicesCat.
+
+worldhappiness2017sel <- na.omit(subset(worldhappiness2017,select=c(Happiness,LogGDPPerCapita,SocialSupportCategory,FreedomToMakeLifeChoicesCat)))# I select data to exclude the missing data
+ggplot(worldhappiness2017sel,aes(x=LogGDPPerCapita, y=Happiness,size=SocialSupportCategory,color=FreedomToMakeLifeChoicesCat))+
+  geom_point()+
+  labs(title="Happiness And LogGDPPerCapita")+
+  centertitle
+  
+ #3) Choose at least three, but no more than about eight, countries from the data that are of interest.
+ b) Produce a graph of Happiness over time, with a different color for each country you chose.
+ worldhappinesschoose <- filter(worldhappiness,country %in% c("China","United States","Portugal"))
+#worldhappinesschoose
+
+ggplot(worldhappinesschoose,aes(x=year,y=Happiness,color=country))+
+  geom_point()+
+  geom_smooth(se=F)+
+  labs(title = "Happiness over Time")+
+  centertitle
+  
+#c) For these countries, use only the 2017 data to produce at least two graphs of Happiness as the
+dependent (y) variable and another variable as the independent (x) variable.
+
+worldhappinesschoose2017 <- filter(worldhappinesschoose,year==2017)
+#worldhappinesschoose2017
+ggplot(worldhappinesschoose2017,aes(x=LogGDPPerCapita,y=Happiness))+
+  geom_point()+
+  geom_smooth(se=F)+
+  geom_text(label=worldhappinesschoose2017$country)+
+  labs(title = "Happiness VS LogGDPPerCapita")+
+  centertitle
+
+ggplot(worldhappinesschoose2017,aes(x=SocialSupport,y=Happiness))+
+  geom_point()+
+  geom_smooth(se=F)+
+  geom_text(label=worldhappinesschoose2017$country)+
+  labs(title = "Happiness VS SocialSupport")+
+  centertitle
+
+ggplot(worldhappinesschoose2017,aes(x=FreedomToMakeLifeChoices,y=Happiness))+
+  geom_point()+
+  geom_smooth(se=F)+
+  geom_text(label=worldhappinesschoose2017$country)+
+  labs(title = "Happiness VS FreedomToMakeLifeChoices")+
+  centertitle
